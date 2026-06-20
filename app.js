@@ -43,6 +43,7 @@ let records = [];
 let projects = [];
 let dataMode = "local";
 let statusTimer = null;
+let startupError = "";
 
 logoutButton?.addEventListener("click", async () => {
   try {
@@ -200,7 +201,12 @@ async function initializeApp() {
   }
 
   if (!remoteLoaded) {
-    initializeLocal();
+    if (location.protocol === "file:") {
+      initializeLocal();
+    } else {
+      renderStartupError();
+      return;
+    }
   }
 
   logoutButton.hidden = !isRemoteMode();
@@ -224,7 +230,8 @@ async function tryInitializeRemote() {
       redirectToLogin();
       return "redirect";
     }
-    console.warn("Remote API unavailable, fallback to local mode:", error);
+    console.error("Remote API unavailable:", error);
+    startupError = error?.message || "云端数据连接失败。";
     return false;
   }
 }
@@ -256,6 +263,22 @@ function render() {
   renderRecordHead();
   renderRecords();
   renderProjects();
+}
+
+function renderStartupError() {
+  recordHeadRow.innerHTML = "";
+  recordColGroup.innerHTML = "";
+  projectList.innerHTML = `<div class="empty-state compact">云端未连接</div>`;
+  recordPagination.innerHTML = "";
+  recordBody.innerHTML = `
+    <tr>
+      <td colspan="1">
+        <div class="empty-state">
+          ${escapeHtml(startupError || "云端数据连接失败，请稍后刷新重试。")}
+        </div>
+      </td>
+    </tr>
+  `;
 }
 
 function renderRecords() {

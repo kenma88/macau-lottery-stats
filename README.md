@@ -96,6 +96,24 @@ database_id = "PLEASE_REPLACE_WITH_YOUR_D1_DATABASE_ID"
 - `api` 接口也会一起校验密码
 - 顶部有“退出登录”按钮
 
+## 线上排查
+
+如果页面没有显示“退出登录”，或者手机和电脑数据不同步，说明页面大概率没有进入云端模式。
+
+这时可以登录后直接打开：
+
+- `/api/health`
+
+例如：
+
+- `https://cfwk.kdns.fr/api/health`
+
+正常时会返回：
+
+```json
+{"ok":true,"authConfigured":true,"databaseBinding":true}
+```
+
 ## 建议
 
 `AUTH_SECRET` 不要设置成和 `SITE_PASSWORD` 一样。
