@@ -37,7 +37,11 @@ const clearModalBtn = document.querySelector("#clearModalBtn");
 const logoutButton = document.querySelector("#logoutButton");
 
 const pageSize = 20;
-const tabSessionKey = "macauTabSessionActive";
+const tabSessionFlagKey = "macauTabSessionActive";
+const tabSessionIdKey = "macauTabSessionId";
+const tabHeartbeatPrefix = "macauTabHeartbeat:";
+const tabHeartbeatTtlMs = 15000;
+const tabHeartbeatIntervalMs = 5000;
 let currentPage = 1;
 let editingProjectCell = null;
 let records = [];
@@ -45,6 +49,7 @@ let projects = [];
 let dataMode = "local";
 let statusTimer = null;
 let startupError = "";
+let heartbeatTimer = null;
 
 logoutButton?.addEventListener("click", async () => {
   try {
@@ -196,7 +201,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 async function initializeApp() {
-  if (location.protocol !== "file:" && sessionStorage.getItem(tabSessionKey) !== "1") {
+  if (location.protocol !== "file:" && !hasValidTabSession()) {
     redirectToLogin();
     return;
   }
@@ -216,6 +221,7 @@ async function initializeApp() {
   }
 
   logoutButton.hidden = !isRemoteMode();
+  startTabHeartbeat();
 
   render();
 }
@@ -764,7 +770,7 @@ function redirectToLogin() {
     return;
   }
 
-  sessionStorage.removeItem(tabSessionKey);
+  clearTabSession();
 
   const next = `${location.pathname}${location.search}${location.hash}`;
   const loginUrl = new URL("/login/", location.origin);
@@ -773,5 +779,61 @@ function redirectToLogin() {
   }
   window.location.replace(loginUrl.toString());
 }
+
+function hasValidTabSession() {
+  const active = sessionStorage.getItem(tabSessionFlagKey) === "1";
+  const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
+  if (!active || !tabSessionId) {
+    clearTabSession();
+    return false;
+  }
+
+  const heartbeat = Number(localStorage.getItem(`${tabHeartbeatPrefix}${tabSessionId}`) || "0");
+  const fresh = heartbeat > 0 && Date.now() - heartbeat <= tabHeartbeatTtlMs;
+  if (!fresh) {
+    clearTabSession();
+    return false;
+  }
+
+  return true;
+}
+
+function startTabHeartbeat() {
+  const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
+  if (!tabSessionId) return;
+
+  writeHeartbeat(tabSessionId);
+
+  if (heartbeatTimer) {
+    clearInterval(heartbeatTimer);
+  }
+
+  heartbeatTimer = window.setInterval(() => {
+    writeHeartbeat(tabSessionId);
+  }, tabHeartbeatIntervalMs);
+}
+
+function writeHeartbeat(tabSessionId) {
+  localStorage.setItem(`${tabHeartbeatPrefix}${tabSessionId}`, String(Date.now()));
+}
+
+function clearTabSession() {
+  const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
+  if (heartbeatTimer) {
+    clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+  }
+
+  if (tabSessionId) {
+    localStorage.removeItem(`${tabHeartbeatPrefix}${tabSessionId}`);
+  }
+
+  sessionStorage.removeItem(tabSessionFlagKey);
+  sessionStorage.removeItem(tabSessionIdKey);
+}
+
+window.addEventListener("pagehide", () => {
+  clearTabSession();
+});
 
 initializeApp();

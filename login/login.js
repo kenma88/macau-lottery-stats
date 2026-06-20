@@ -1,7 +1,10 @@
 const loginForm = document.querySelector("#loginForm");
 const passwordInput = document.querySelector("#passwordInput");
 const loginError = document.querySelector("#loginError");
-const tabSessionKey = "macauTabSessionActive";
+const tabSessionFlagKey = "macauTabSessionActive";
+const tabSessionIdKey = "macauTabSessionId";
+const tabHeartbeatPrefix = "macauTabHeartbeat:";
+const tabHeartbeatTtlMs = 15000;
 
 const nextPath = getNextPath();
 
@@ -33,7 +36,10 @@ loginForm.addEventListener("submit", async (event) => {
       throw new Error(payload?.error || "登录失败。");
     }
 
-    sessionStorage.setItem(tabSessionKey, "1");
+    const tabSessionId = crypto.randomUUID();
+    sessionStorage.setItem(tabSessionFlagKey, "1");
+    sessionStorage.setItem(tabSessionIdKey, tabSessionId);
+    localStorage.setItem(`${tabHeartbeatPrefix}${tabSessionId}`, String(Date.now()));
     window.location.replace(nextPath);
   } catch (error) {
     setError(error?.message || "登录失败。");
@@ -47,8 +53,36 @@ loginForm.addEventListener("submit", async (event) => {
 
 passwordInput.focus();
 
-if (sessionStorage.getItem(tabSessionKey) === "1" && (nextPath === "/" || nextPath.startsWith("/?") || nextPath.startsWith("/#"))) {
+if (hasValidTabSession() && (nextPath === "/" || nextPath.startsWith("/?") || nextPath.startsWith("/#"))) {
   window.location.replace(nextPath);
+}
+
+function hasValidTabSession() {
+  const active = sessionStorage.getItem(tabSessionFlagKey) === "1";
+  const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
+  if (!active || !tabSessionId) {
+    clearTabSession();
+    return false;
+  }
+
+  const heartbeat = Number(localStorage.getItem(`${tabHeartbeatPrefix}${tabSessionId}`) || "0");
+  const fresh = heartbeat > 0 && Date.now() - heartbeat <= tabHeartbeatTtlMs;
+  if (!fresh) {
+    clearTabSession();
+    return false;
+  }
+
+  return true;
+}
+
+function clearTabSession() {
+  const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
+  if (tabSessionId) {
+    localStorage.removeItem(`${tabHeartbeatPrefix}${tabSessionId}`);
+  }
+
+  sessionStorage.removeItem(tabSessionFlagKey);
+  sessionStorage.removeItem(tabSessionIdKey);
 }
 
 function setError(message) {
