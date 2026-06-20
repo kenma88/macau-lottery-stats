@@ -37,9 +37,7 @@ const clearModalBtn = document.querySelector("#clearModalBtn");
 const logoutButton = document.querySelector("#logoutButton");
 
 const pageSize = 20;
-const tabSessionFlagKey = "macauTabSessionActive";
-const tabSessionIdKey = "macauTabSessionId";
-const tabClosedPrefix = "macauTabClosed:";
+const windowSessionPrefix = "macauTabSession:";
 let currentPage = 1;
 let editingProjectCell = null;
 let records = [];
@@ -778,54 +776,13 @@ function redirectToLogin() {
 }
 
 function hasValidTabSession() {
-  const active = sessionStorage.getItem(tabSessionFlagKey) === "1";
-  const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
-  if (!active || !tabSessionId) {
-    clearTabSession();
-    return false;
-  }
-
-  const closedMarker = localStorage.getItem(`${tabClosedPrefix}${tabSessionId}`);
-  if (closedMarker) {
-    if (getNavigationType() === "reload") {
-      clearTabClosedMarker();
-      return true;
-    }
-    clearTabSession();
-    return false;
-  }
-
-  return true;
+  return window.name.startsWith(windowSessionPrefix);
 }
 
 function clearTabSession() {
-  const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
-  if (tabSessionId) {
-    localStorage.removeItem(`${tabClosedPrefix}${tabSessionId}`);
+  if (window.name.startsWith(windowSessionPrefix)) {
+    window.name = "";
   }
-
-  sessionStorage.removeItem(tabSessionFlagKey);
-  sessionStorage.removeItem(tabSessionIdKey);
 }
-
-function clearTabClosedMarker() {
-  const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
-  if (!tabSessionId) return;
-  localStorage.removeItem(`${tabClosedPrefix}${tabSessionId}`);
-}
-
-function markTabClosed() {
-  const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
-  if (!tabSessionId) return;
-  localStorage.setItem(`${tabClosedPrefix}${tabSessionId}`, String(Date.now()));
-}
-
-function getNavigationType() {
-  return performance.getEntriesByType("navigation")[0]?.type || "navigate";
-}
-
-window.addEventListener("beforeunload", markTabClosed);
-window.addEventListener("pagehide", markTabClosed);
-window.addEventListener("unload", markTabClosed);
 
 initializeApp();

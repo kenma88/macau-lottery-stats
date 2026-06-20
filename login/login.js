@@ -1,9 +1,7 @@
 const loginForm = document.querySelector("#loginForm");
 const passwordInput = document.querySelector("#passwordInput");
 const loginError = document.querySelector("#loginError");
-const tabSessionFlagKey = "macauTabSessionActive";
-const tabSessionIdKey = "macauTabSessionId";
-const tabClosedPrefix = "macauTabClosed:";
+const windowSessionPrefix = "macauTabSession:";
 
 const nextPath = getNextPath();
 
@@ -35,10 +33,7 @@ loginForm.addEventListener("submit", async (event) => {
       throw new Error(payload?.error || "登录失败。");
     }
 
-    const tabSessionId = crypto.randomUUID();
-    sessionStorage.setItem(tabSessionFlagKey, "1");
-    sessionStorage.setItem(tabSessionIdKey, tabSessionId);
-    localStorage.removeItem(`${tabClosedPrefix}${tabSessionId}`);
+    window.name = `${windowSessionPrefix}${crypto.randomUUID()}`;
     window.location.replace(nextPath);
   } catch (error) {
     setError(error?.message || "登录失败。");
@@ -57,30 +52,13 @@ if (hasValidTabSession() && (nextPath === "/" || nextPath.startsWith("/?") || ne
 }
 
 function hasValidTabSession() {
-  const active = sessionStorage.getItem(tabSessionFlagKey) === "1";
-  const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
-  if (!active || !tabSessionId) {
-    clearTabSession();
-    return false;
-  }
-
-  const closedMarker = localStorage.getItem(`${tabClosedPrefix}${tabSessionId}`);
-  if (closedMarker) {
-    clearTabSession();
-    return false;
-  }
-
-  return true;
+  return window.name.startsWith(windowSessionPrefix);
 }
 
 function clearTabSession() {
-  const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
-  if (tabSessionId) {
-    localStorage.removeItem(`${tabClosedPrefix}${tabSessionId}`);
+  if (window.name.startsWith(windowSessionPrefix)) {
+    window.name = "";
   }
-
-  sessionStorage.removeItem(tabSessionFlagKey);
-  sessionStorage.removeItem(tabSessionIdKey);
 }
 
 function setError(message) {
