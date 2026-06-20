@@ -5,4 +5,4 @@ pages_build_output_dir = "."
 [[d1_databases]]
 binding = "DB"
 database_name = "macau-lottery-stats"
-database_id = "PLEASE_REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "0e9ecb9b-baa3-4642-99dc-9a28069d2fa2"
