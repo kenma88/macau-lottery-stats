@@ -3,41 +3,45 @@ import { officialRecords2026 } from "./official-records-2026-data.js";
 const zodiacs = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
 const officialImportKey = "official_import_2026_001_171";
 
-const schemaSql = `
-CREATE TABLE IF NOT EXISTS metadata (
-  key TEXT PRIMARY KEY,
-  value TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS projects (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE,
-  sort_order INTEGER NOT NULL,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS records (
-  issue TEXT PRIMARY KEY,
-  draw_date TEXT NOT NULL,
-  regular_json TEXT NOT NULL,
-  special INTEGER NOT NULL,
-  zodiacs_json TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS project_values (
-  issue TEXT NOT NULL,
-  project_id TEXT NOT NULL,
-  value TEXT NOT NULL DEFAULT '',
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (issue, project_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_projects_sort_order ON projects(sort_order ASC);
-CREATE INDEX IF NOT EXISTS idx_records_issue ON records(issue DESC);
-CREATE INDEX IF NOT EXISTS idx_project_values_project_id ON project_values(project_id);
-`;
+const schemaStatements = [
+  `
+  CREATE TABLE IF NOT EXISTS metadata (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  )
+  `,
+  `
+  CREATE TABLE IF NOT EXISTS projects (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    sort_order INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )
+  `,
+  `
+  CREATE TABLE IF NOT EXISTS records (
+    issue TEXT PRIMARY KEY,
+    draw_date TEXT NOT NULL,
+    regular_json TEXT NOT NULL,
+    special INTEGER NOT NULL,
+    zodiacs_json TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )
+  `,
+  `
+  CREATE TABLE IF NOT EXISTS project_values (
+    issue TEXT NOT NULL,
+    project_id TEXT NOT NULL,
+    value TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (issue, project_id)
+  )
+  `,
+  "CREATE INDEX IF NOT EXISTS idx_projects_sort_order ON projects(sort_order ASC)",
+  "CREATE INDEX IF NOT EXISTS idx_records_issue ON records(issue DESC)",
+  "CREATE INDEX IF NOT EXISTS idx_project_values_project_id ON project_values(project_id)",
+];
 
 let readyPromise = null;
 
@@ -215,7 +219,7 @@ function createError(message, status) {
 }
 
 async function setupDatabase(env) {
-  await env.DB.exec(schemaSql);
+  await env.DB.batch(schemaStatements.map((statement) => env.DB.prepare(statement)));
 
   const imported = await env.DB.prepare("SELECT value FROM metadata WHERE key = ?").bind(officialImportKey).first();
   if (imported?.value === "1") {
