@@ -1,6 +1,7 @@
 const loginForm = document.querySelector("#loginForm");
 const passwordInput = document.querySelector("#passwordInput");
 const loginError = document.querySelector("#loginError");
+const tabSessionKey = "macauTabSessionActive";
 
 const nextPath = getNextPath();
 
@@ -32,6 +33,7 @@ loginForm.addEventListener("submit", async (event) => {
       throw new Error(payload?.error || "登录失败。");
     }
 
+    sessionStorage.setItem(tabSessionKey, "1");
     window.location.replace(nextPath);
   } catch (error) {
     setError(error?.message || "登录失败。");
@@ -44,6 +46,10 @@ loginForm.addEventListener("submit", async (event) => {
 });
 
 passwordInput.focus();
+
+if (sessionStorage.getItem(tabSessionKey) === "1" && (nextPath === "/" || nextPath.startsWith("/?") || nextPath.startsWith("/#"))) {
+  window.location.replace(nextPath);
+}
 
 function setError(message) {
   loginError.hidden = !message;

@@ -37,6 +37,7 @@ const clearModalBtn = document.querySelector("#clearModalBtn");
 const logoutButton = document.querySelector("#logoutButton");
 
 const pageSize = 20;
+const tabSessionKey = "macauTabSessionActive";
 let currentPage = 1;
 let editingProjectCell = null;
 let records = [];
@@ -195,6 +196,11 @@ document.addEventListener("keydown", (event) => {
 });
 
 async function initializeApp() {
+  if (location.protocol !== "file:" && sessionStorage.getItem(tabSessionKey) !== "1") {
+    redirectToLogin();
+    return;
+  }
+
   const remoteLoaded = await tryInitializeRemote();
   if (remoteLoaded === "redirect") {
     return;
@@ -757,6 +763,8 @@ function redirectToLogin() {
   if (location.protocol === "file:") {
     return;
   }
+
+  sessionStorage.removeItem(tabSessionKey);
 
   const next = `${location.pathname}${location.search}${location.hash}`;
   const loginUrl = new URL("/login/", location.origin);

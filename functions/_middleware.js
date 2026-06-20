@@ -12,13 +12,6 @@ export async function onRequest(context) {
   const url = new URL(request.url);
 
   if (isPublicPath(url.pathname)) {
-    if ((url.pathname === "/login" || url.pathname === "/login/") && isAuthConfigured(env)) {
-      const authenticated = await isAuthenticated(request, env);
-      if (authenticated) {
-        return Response.redirect(new URL("/", url.origin), 302);
-      }
-    }
-
     return context.next();
   }
 
