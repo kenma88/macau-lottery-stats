@@ -1,7 +1,6 @@
 const loginForm = document.querySelector("#loginForm");
 const passwordInput = document.querySelector("#passwordInput");
 const loginError = document.querySelector("#loginError");
-const windowSessionPrefix = "macauTabSession:";
 
 const nextPath = getNextPath();
 
@@ -33,8 +32,7 @@ loginForm.addEventListener("submit", async (event) => {
       throw new Error(payload?.error || "登录失败。");
     }
 
-    window.name = `${windowSessionPrefix}${crypto.randomUUID()}`;
-    window.location.replace(nextPath);
+    window.location.replace(addLoginEntry(nextPath));
   } catch (error) {
     setError(error?.message || "登录失败。");
     passwordInput.focus();
@@ -46,20 +44,6 @@ loginForm.addEventListener("submit", async (event) => {
 });
 
 passwordInput.focus();
-
-if (hasValidTabSession() && (nextPath === "/" || nextPath.startsWith("/?") || nextPath.startsWith("/#"))) {
-  window.location.replace(nextPath);
-}
-
-function hasValidTabSession() {
-  return window.name.startsWith(windowSessionPrefix);
-}
-
-function clearTabSession() {
-  if (window.name.startsWith(windowSessionPrefix)) {
-    window.name = "";
-  }
-}
 
 function setError(message) {
   loginError.hidden = !message;
@@ -73,4 +57,10 @@ function getNextPath() {
     return "/";
   }
   return next;
+}
+
+function addLoginEntry(path) {
+  const url = new URL(path, window.location.origin);
+  url.searchParams.set("login_entry", String(Date.now()));
+  return `${url.pathname}${url.search}${url.hash}`;
 }

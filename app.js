@@ -37,7 +37,6 @@ const clearModalBtn = document.querySelector("#clearModalBtn");
 const logoutButton = document.querySelector("#logoutButton");
 
 const pageSize = 20;
-const windowSessionPrefix = "macauTabSession:";
 let currentPage = 1;
 let editingProjectCell = null;
 let records = [];
@@ -196,7 +195,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 async function initializeApp() {
-  if (location.protocol !== "file:" && !hasValidTabSession()) {
+  if (location.protocol !== "file:" && !consumeLoginEntry()) {
     redirectToLogin();
     return;
   }
@@ -765,8 +764,6 @@ function redirectToLogin() {
     return;
   }
 
-  clearTabSession();
-
   const next = `${location.pathname}${location.search}${location.hash}`;
   const loginUrl = new URL("/login/", location.origin);
   if (next && next !== "/") {
@@ -775,14 +772,16 @@ function redirectToLogin() {
   window.location.replace(loginUrl.toString());
 }
 
-function hasValidTabSession() {
-  return window.name.startsWith(windowSessionPrefix);
-}
-
-function clearTabSession() {
-  if (window.name.startsWith(windowSessionPrefix)) {
-    window.name = "";
+function consumeLoginEntry() {
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has("login_entry")) {
+    return false;
   }
+
+  url.searchParams.delete("login_entry");
+  const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+  window.history.replaceState(null, "", nextUrl || "/");
+  return true;
 }
 
 initializeApp();
