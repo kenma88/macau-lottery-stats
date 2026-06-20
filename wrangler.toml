@@ -1,0 +1,8 @@
+name = "macau-lottery-stats"
+compatibility_date = "2026-06-21"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "macau-lottery-stats"
+database_id = "PLEASE_REPLACE_WITH_YOUR_D1_DATABASE_ID"

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>新澳门六合彩开奖统计表</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="topline">
+        <span id="todayLabel"></span>
+        <button id="logoutButton" type="button" class="topline-button" hidden>退出登录</button>
+      </div>
+      <div class="brand-bar">
+        <div class="brand-mark">澳</div>
+        <div>
+          <h1>新澳门六合彩开奖统计表</h1>
+        </div>
+      </div>
+      <nav class="nav-tabs" aria-label="页面栏目">
+        <a href="#records" class="active">开奖记录</a>
+      </nav>
+    </header>
+
+    <main class="page-shell">
+      <section id="records" class="panel">
+        <div class="section-heading">
+          <div>
+            <h2>开奖记录</h2>
+            <p>添加或删除每期开奖结果，号码会自动生成波色与生肖展示。</p>
+          </div>
+        </div>
+
+        <form id="recordForm" class="record-form">
+          <label>
+            <span>期号</span>
+            <input id="issueInput" type="text" inputmode="numeric" placeholder="例如 20260620" required />
+          </label>
+          <label>
+            <span>开奖日期</span>
+            <input id="dateInput" type="date" required />
+          </label>
+          <label>
+            <span>平码 1-6</span>
+            <input id="regularInput" type="text" placeholder="01, 08, 16, 23, 31, 45" required />
+          </label>
+          <label>
+            <span>特码</span>
+            <input id="specialInput" type="text" inputmode="numeric" placeholder="49" required />
+          </label>
+          <button type="submit" class="primary-button">新增记录</button>
+        </form>
+
+        <div class="table-wrap">
+          <table class="draw-table">
+            <colgroup id="recordColGroup"></colgroup>
+            <thead>
+              <tr id="recordHeadRow"></tr>
+            </thead>
+            <tbody id="recordBody"></tbody>
+          </table>
+        </div>
+        <div id="recordPagination" class="record-pagination" aria-label="开奖记录分页"></div>
+      </section>
+
+      <section id="projects" class="panel">
+        <div class="section-heading">
+          <div>
+            <h2>统计项目管理</h2>
+            <p>新增后会自动追加到“特码相加”后面。</p>
+          </div>
+        </div>
+
+        <form id="projectForm" class="project-form">
+          <label class="project-input-wrap">
+            <input id="projectInput" type="text" placeholder="例如 特码尾数+1" required />
+          </label>
+          <button type="submit" class="primary-button">新增项目</button>
+        </form>
+
+        <div class="project-tags-panel">
+          <span class="project-tags-title">已添加项目</span>
+          <div class="project-list" id="projectList" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="projectValueModal" class="modal-backdrop" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+          <div>
+            <h3 id="modalTitle">编辑统计项目</h3>
+            <p id="modalMeta"></p>
+          </div>
+          <button id="closeModalBtn" class="modal-close-button" type="button" aria-label="关闭弹窗">关闭</button>
+        </div>
+
+        <form id="projectValueForm" class="modal-form">
+          <label>
+            <span>项目值</span>
+            <input id="modalValueInput" type="text" placeholder="请输入该项目的值" />
+          </label>
+
+          <div class="modal-actions">
+            <button id="clearModalBtn" type="button" class="ghost-button">清空</button>
+            <button id="cancelModalBtn" type="button" class="ghost-button">取消</button>
+            <button type="submit" class="primary-button">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="official-records-2026.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
