@@ -3,8 +3,7 @@ const passwordInput = document.querySelector("#passwordInput");
 const loginError = document.querySelector("#loginError");
 const tabSessionFlagKey = "macauTabSessionActive";
 const tabSessionIdKey = "macauTabSessionId";
-const tabHeartbeatPrefix = "macauTabHeartbeat:";
-const tabHeartbeatTtlMs = 15000;
+const tabClosedPrefix = "macauTabClosed:";
 
 const nextPath = getNextPath();
 
@@ -39,7 +38,7 @@ loginForm.addEventListener("submit", async (event) => {
     const tabSessionId = crypto.randomUUID();
     sessionStorage.setItem(tabSessionFlagKey, "1");
     sessionStorage.setItem(tabSessionIdKey, tabSessionId);
-    localStorage.setItem(`${tabHeartbeatPrefix}${tabSessionId}`, String(Date.now()));
+    localStorage.removeItem(`${tabClosedPrefix}${tabSessionId}`);
     window.location.replace(nextPath);
   } catch (error) {
     setError(error?.message || "登录失败。");
@@ -65,9 +64,8 @@ function hasValidTabSession() {
     return false;
   }
 
-  const heartbeat = Number(localStorage.getItem(`${tabHeartbeatPrefix}${tabSessionId}`) || "0");
-  const fresh = heartbeat > 0 && Date.now() - heartbeat <= tabHeartbeatTtlMs;
-  if (!fresh) {
+  const closedMarker = localStorage.getItem(`${tabClosedPrefix}${tabSessionId}`);
+  if (closedMarker) {
     clearTabSession();
     return false;
   }
@@ -78,7 +76,7 @@ function hasValidTabSession() {
 function clearTabSession() {
   const tabSessionId = sessionStorage.getItem(tabSessionIdKey);
   if (tabSessionId) {
-    localStorage.removeItem(`${tabHeartbeatPrefix}${tabSessionId}`);
+    localStorage.removeItem(`${tabClosedPrefix}${tabSessionId}`);
   }
 
   sessionStorage.removeItem(tabSessionFlagKey);
