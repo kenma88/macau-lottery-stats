@@ -1,5 +1,5 @@
 name = "macau-lottery-stats"
-compatibility_date = "2026-06-21"
+compatibility_date = "2026-06-20"
 pages_build_output_dir = "."
 
 [[d1_databases]]
