@@ -1,4 +1,4 @@
-import { createSession, isAuthConfigured, json, verifyPassword } from "../../_shared/auth.js";
+import { createSessionCookie, isAuthConfigured, json, verifyPassword } from "../../_shared/auth.js";
 
 export async function onRequestPost(context) {
   try {
@@ -17,12 +17,11 @@ export async function onRequestPost(context) {
       return json({ error: "密码不正确。" }, 401);
     }
 
-    const session = await createSession(context.env);
     return json(
-      { ok: true, sessionNonce: session.sessionNonce },
+      { ok: true },
       200,
       {
-        "Set-Cookie": session.cookie,
+        "Set-Cookie": await createSessionCookie(context.env),
       },
     );
   } catch (error) {

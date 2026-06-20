@@ -32,10 +32,6 @@ loginForm.addEventListener("submit", async (event) => {
       throw new Error(payload?.error || "登录失败。");
     }
 
-    if (payload?.sessionNonce) {
-      sessionStorage.setItem("macauSessionNonce", payload.sessionNonce);
-    }
-
     window.location.replace(nextPath);
   } catch (error) {
     setError(error?.message || "登录失败。");

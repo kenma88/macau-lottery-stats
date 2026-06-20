@@ -14,31 +14,17 @@ export async function isAuthenticated(request, env) {
   return true;
 }
 
-export async function isApiAuthenticated(request, env) {
-  const session = await readSession(request, env);
-  if (!session) {
-    return false;
-  }
-
-  const requestNonce = request.headers.get("X-Session-Nonce") || "";
-  return constantTimeEqual(requestNonce, session.sessionNonce);
-}
-
-export async function createSession(env) {
+export async function createSessionCookie(env) {
   assertConfigured(env);
 
   const maxAgeDays = Number(env.AUTH_MAX_AGE_DAYS || DEFAULT_SESSION_DAYS);
   const maxAgeSeconds = Math.max(1, Math.round(maxAgeDays * 24 * 60 * 60));
   const expiresAt = Math.floor(Date.now() / 1000) + maxAgeSeconds;
   const passwordFingerprint = await getPasswordFingerprint(env);
-  const sessionNonce = crypto.randomUUID();
-  const signature = await hmacHex(env.AUTH_SECRET, `${expiresAt}.${passwordFingerprint}.${sessionNonce}`);
-  const token = `${expiresAt}.${passwordFingerprint}.${sessionNonce}.${signature}`;
+  const signature = await hmacHex(env.AUTH_SECRET, `${expiresAt}.${passwordFingerprint}`);
+  const token = `${expiresAt}.${passwordFingerprint}.${signature}`;
 
-  return {
-    sessionNonce,
-    cookie: serializeCookie(COOKIE_NAME, token, maxAgeSeconds),
-  };
+  return serializeCookie(COOKIE_NAME, token, maxAgeSeconds);
 }
 
 export function createLogoutCookie() {
@@ -184,15 +170,14 @@ async function readSession(request, env) {
   }
 
   const parts = token.split(".");
-  if (parts.length !== 4) {
+  if (parts.length !== 3) {
     return null;
   }
 
-  const [expiresAt, passwordFingerprint, sessionNonce, signature] = parts;
+  const [expiresAt, passwordFingerprint, signature] = parts;
   if (
     !/^\d+$/.test(expiresAt) ||
     !/^[a-f0-9]{16}$/i.test(passwordFingerprint) ||
-    !/^[0-9a-f-]{36}$/i.test(sessionNonce) ||
     !/^[a-f0-9]{64}$/i.test(signature)
   ) {
     return null;
@@ -207,7 +192,7 @@ async function readSession(request, env) {
     return null;
   }
 
-  const expectedSignature = await hmacHex(env.AUTH_SECRET, `${expiresAt}.${passwordFingerprint}.${sessionNonce}`);
+  const expectedSignature = await hmacHex(env.AUTH_SECRET, `${expiresAt}.${passwordFingerprint}`);
   if (!constantTimeEqual(signature, expectedSignature)) {
     return null;
   }
@@ -215,6 +200,5 @@ async function readSession(request, env) {
   return {
     expiresAt: Number(expiresAt),
     passwordFingerprint,
-    sessionNonce,
   };
 }

@@ -2,7 +2,6 @@ import {
   buildLoginUrl,
   createConfigErrorResponse,
   createUnauthorizedApiResponse,
-  isApiAuthenticated,
   isAuthenticated,
   isAuthConfigured,
   isPublicPath,
@@ -28,11 +27,11 @@ export async function onRequest(context) {
   }
 
   if (url.pathname.startsWith("/api/")) {
-    const apiAuthenticated = await isApiAuthenticated(request, env);
-    if (apiAuthenticated) {
+    const authenticated = await isAuthenticated(request, env);
+    if (authenticated) {
       return context.next();
     }
-    return createUnauthorizedApiResponse("请重新打开页面并登录。");
+    return createUnauthorizedApiResponse();
   }
 
   const authenticated = await isAuthenticated(request, env);

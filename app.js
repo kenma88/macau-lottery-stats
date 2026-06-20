@@ -37,7 +37,6 @@ const clearModalBtn = document.querySelector("#clearModalBtn");
 const logoutButton = document.querySelector("#logoutButton");
 
 const pageSize = 20;
-const sessionNonceKey = "macauSessionNonce";
 let currentPage = 1;
 let editingProjectCell = null;
 let records = [];
@@ -738,7 +737,6 @@ async function request(url, options = {}) {
   const response = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
-      "X-Session-Nonce": sessionStorage.getItem(sessionNonceKey) || "",
       ...(options.headers ?? {}),
     },
     ...options,
@@ -759,8 +757,6 @@ function redirectToLogin() {
   if (location.protocol === "file:") {
     return;
   }
-
-  sessionStorage.removeItem(sessionNonceKey);
 
   const next = `${location.pathname}${location.search}${location.hash}`;
   const loginUrl = new URL("/login/", location.origin);
