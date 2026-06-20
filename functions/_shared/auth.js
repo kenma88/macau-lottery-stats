@@ -7,45 +7,38 @@ export async function isAuthenticated(request, env) {
     return false;
   }
 
-  const token = getCookie(request, COOKIE_NAME);
-  if (!token) {
+  const session = await readSession(request, env);
+  if (!session) {
     return false;
   }
-
-  const parts = token.split(".");
-  if (parts.length !== 3) {
-    return false;
-  }
-
-  const [expiresAt, passwordFingerprint, signature] = parts;
-  if (!/^\d+$/.test(expiresAt) || !/^[a-f0-9]{16}$/i.test(passwordFingerprint) || !/^[a-f0-9]{64}$/i.test(signature)) {
-    return false;
-  }
-
-  if (Number(expiresAt) <= Math.floor(Date.now() / 1000)) {
-    return false;
-  }
-
-  const currentFingerprint = await getPasswordFingerprint(env);
-  if (!constantTimeEqual(passwordFingerprint, currentFingerprint)) {
-    return false;
-  }
-
-  const expectedSignature = await hmacHex(env.AUTH_SECRET, `${expiresAt}.${passwordFingerprint}`);
-  return constantTimeEqual(signature, expectedSignature);
+  return true;
 }
 
-export async function createSessionCookie(env) {
+export async function isApiAuthenticated(request, env) {
+  const session = await readSession(request, env);
+  if (!session) {
+    return false;
+  }
+
+  const requestNonce = request.headers.get("X-Session-Nonce") || "";
+  return constantTimeEqual(requestNonce, session.sessionNonce);
+}
+
+export async function createSession(env) {
   assertConfigured(env);
 
   const maxAgeDays = Number(env.AUTH_MAX_AGE_DAYS || DEFAULT_SESSION_DAYS);
   const maxAgeSeconds = Math.max(1, Math.round(maxAgeDays * 24 * 60 * 60));
   const expiresAt = Math.floor(Date.now() / 1000) + maxAgeSeconds;
   const passwordFingerprint = await getPasswordFingerprint(env);
-  const signature = await hmacHex(env.AUTH_SECRET, `${expiresAt}.${passwordFingerprint}`);
-  const token = `${expiresAt}.${passwordFingerprint}.${signature}`;
+  const sessionNonce = crypto.randomUUID();
+  const signature = await hmacHex(env.AUTH_SECRET, `${expiresAt}.${passwordFingerprint}.${sessionNonce}`);
+  const token = `${expiresAt}.${passwordFingerprint}.${sessionNonce}.${signature}`;
 
-  return serializeCookie(COOKIE_NAME, token, maxAgeSeconds);
+  return {
+    sessionNonce,
+    cookie: serializeCookie(COOKIE_NAME, token, maxAgeSeconds),
+  };
 }
 
 export function createLogoutCookie() {
@@ -182,4 +175,46 @@ function serializeCookie(name, value, maxAgeSeconds) {
   ];
 
   return segments.join("; ");
+}
+
+async function readSession(request, env) {
+  const token = getCookie(request, COOKIE_NAME);
+  if (!token) {
+    return null;
+  }
+
+  const parts = token.split(".");
+  if (parts.length !== 4) {
+    return null;
+  }
+
+  const [expiresAt, passwordFingerprint, sessionNonce, signature] = parts;
+  if (
+    !/^\d+$/.test(expiresAt) ||
+    !/^[a-f0-9]{16}$/i.test(passwordFingerprint) ||
+    !/^[0-9a-f-]{36}$/i.test(sessionNonce) ||
+    !/^[a-f0-9]{64}$/i.test(signature)
+  ) {
+    return null;
+  }
+
+  if (Number(expiresAt) <= Math.floor(Date.now() / 1000)) {
+    return null;
+  }
+
+  const currentFingerprint = await getPasswordFingerprint(env);
+  if (!constantTimeEqual(passwordFingerprint, currentFingerprint)) {
+    return null;
+  }
+
+  const expectedSignature = await hmacHex(env.AUTH_SECRET, `${expiresAt}.${passwordFingerprint}.${sessionNonce}`);
+  if (!constantTimeEqual(signature, expectedSignature)) {
+    return null;
+  }
+
+  return {
+    expiresAt: Number(expiresAt),
+    passwordFingerprint,
+    sessionNonce,
+  };
 }
