@@ -12,6 +12,8 @@ const colorGroups = {
   green: [5, 6, 11, 16, 17, 21, 22, 27, 28, 32, 33, 38, 39, 43, 44, 49],
 };
 
+const homeZodiacs = ["牛", "马", "羊", "鸡", "狗", "猪"];
+
 const zodiacByNumber2026 = {
   1: "马",
   2: "蛇",
@@ -379,6 +381,7 @@ function renderRecords() {
           <td class="special-cell">${renderBall(special)}</td>
           <td><span class="badge">${special % 2 === 0 ? "双" : "单"}</span></td>
           <td><span class="badge">${special >= 26 ? "大" : "小"}</span></td>
+          <td><span class="badge">${getHomeWildLabel(special)}</span></td>
           <td><span class="badge">${getDigitSumParity(special)}</span></td>
           ${projects.map((project) => renderProjectValueCell(record, index, project)).join("")}
           <td>
@@ -474,6 +477,7 @@ function renderRecordHead() {
     `<col class="col-special" />`,
     `<col class="col-tag" />`,
     `<col class="col-tag" />`,
+    `<col class="col-tag" />`,
     `<col class="col-sum" />`,
     ...projects.map(() => `<col class="col-project" />`),
     `<col class="col-action" />`,
@@ -486,6 +490,7 @@ function renderRecordHead() {
     `<th>特码</th>`,
     `<th>单双</th>`,
     `<th>大小</th>`,
+    `<th>家野</th>`,
     `<th>特码相加</th>`,
     ...projects.map((project) => `<th>${escapeHtml(project.name)}</th>`),
     `<th>操作</th>`,
@@ -729,7 +734,7 @@ function setSelectedProjectMark(mark) {
 }
 
 function getColumnCount() {
-  return 8 + projects.length;
+  return 9 + projects.length;
 }
 
 function getCurrentPageRecords() {
@@ -826,6 +831,11 @@ function getDigitSumParity(number) {
     .reduce((total, digit) => total + Number(digit), 0);
 
   return sum % 2 === 0 ? "合双" : "合单";
+}
+
+function getHomeWildLabel(number) {
+  const zodiac = getZodiac(number);
+  return homeZodiacs.includes(zodiac) ? "家" : "野";
 }
 
 function normalizeRecord(record) {
