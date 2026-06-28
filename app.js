@@ -72,7 +72,6 @@ const recordColGroup = document.querySelector("#recordColGroup");
 const recordHeadRow = document.querySelector("#recordHeadRow");
 const recordBody = document.querySelector("#recordBody");
 const projectList = document.querySelector("#projectList");
-const recordPaginationTop = document.querySelector("#recordPaginationTop");
 const recordPagination = document.querySelector("#recordPagination");
 const issueInput = document.querySelector("#issueInput");
 const dateInput = document.querySelector("#dateInput");
@@ -360,8 +359,13 @@ function renderRecords() {
 
   const totalPages = getTotalPages();
   if (currentPage > totalPages) currentPage = totalPages;
+  let pageRecords = getCurrentPageRecords();
+  if (!pageRecords.length && currentPage > 1) {
+    currentPage = totalPages;
+    pageRecords = getCurrentPageRecords();
+  }
 
-  recordBody.innerHTML = getCurrentPageRecords()
+  recordBody.innerHTML = pageRecords
     .map((record) => {
       const index = records.findIndex((item) => item.issue === record.issue);
       const special = normalizeNumber(record.special);
@@ -545,7 +549,7 @@ function clearPagination() {
 }
 
 function getPaginationContainers() {
-  return [recordPaginationTop, recordPagination].filter(Boolean);
+  return [recordPagination].filter(Boolean);
 }
 
 function renderBall(value) {

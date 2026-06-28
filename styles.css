@@ -638,13 +638,6 @@ input:focus {
   padding: 6px 18px 18px;
 }
 
-.record-pagination.top {
-  justify-content: flex-end;
-  padding: 12px 18px 8px;
-  border-bottom: 1px solid var(--line);
-  background: #fffdfd;
-}
-
 .page-summary {
   color: var(--muted);
   font-size: 13px;
