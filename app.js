@@ -4,7 +4,7 @@ const storageKeys = {
   imported2026: "macauLotteryImported2026_001_171",
 };
 
-const tabSessionKey = "macauLotteryTabSessionActive";
+const loginEntryParam = "login_entry";
 
 const colorGroups = {
   red: [1, 2, 7, 8, 12, 13, 18, 19, 23, 24, 29, 30, 34, 35, 40, 45, 46],
@@ -55,7 +55,6 @@ logoutButton?.addEventListener("click", async () => {
   } catch (error) {
     console.warn("Logout request failed:", error);
   } finally {
-    clearAppTabSession();
     redirectToLogin();
   }
 });
@@ -198,7 +197,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 async function initializeApp() {
-  if (location.protocol !== "file:" && !hasAppTabSession()) {
+  if (location.protocol !== "file:" && !hasLoginEntry()) {
     redirectToLogin();
     return;
   }
@@ -218,10 +217,6 @@ async function initializeApp() {
   }
 
   logoutButton.hidden = !isRemoteMode();
-
-  if (isRemoteMode()) {
-    markAppTabSession();
-  }
 
   render();
 }
@@ -780,53 +775,9 @@ function redirectToLogin() {
   window.location.replace(loginUrl.toString());
 }
 
-function hasAppTabSession() {
-  if (readAppTabSession()) {
-    return true;
-  }
-
-  if (consumeLegacyLoginEntry()) {
-    markAppTabSession();
-    return true;
-  }
-
-  return false;
-}
-
-function readAppTabSession() {
-  try {
-    return sessionStorage.getItem(tabSessionKey) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function markAppTabSession() {
-  try {
-    sessionStorage.setItem(tabSessionKey, "1");
-  } catch {
-    // Some private browser modes can block sessionStorage.
-  }
-}
-
-function clearAppTabSession() {
-  try {
-    sessionStorage.removeItem(tabSessionKey);
-  } catch {
-    // Some private browser modes can block sessionStorage.
-  }
-}
-
-function consumeLegacyLoginEntry() {
+function hasLoginEntry() {
   const url = new URL(window.location.href);
-  if (!url.searchParams.has("login_entry")) {
-    return false;
-  }
-
-  url.searchParams.delete("login_entry");
-  const nextUrl = `${url.pathname}${url.search}${url.hash}`;
-  window.history.replaceState(null, "", nextUrl || "/");
-  return true;
+  return url.searchParams.has(loginEntryParam);
 }
 
 initializeApp();

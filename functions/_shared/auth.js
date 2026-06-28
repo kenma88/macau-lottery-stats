@@ -44,6 +44,7 @@ export function isPublicPath(pathname) {
     pathname.startsWith("/login/") ||
     pathname.startsWith("/api/auth/") ||
     pathname === "/styles.css" ||
+    pathname.endsWith(".js") ||
     pathname === "/favicon.ico"
   );
 }
