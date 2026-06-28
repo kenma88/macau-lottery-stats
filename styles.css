@@ -400,13 +400,12 @@ input:focus {
 }
 
 .project-value-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
   min-width: 86px;
   min-height: 34px;
-  padding: 6px 10px;
+  padding: 7px 12px;
   border: 1px solid #d8dce5;
   border-radius: 6px;
   background: #fff;
@@ -432,21 +431,27 @@ input:focus {
 
 .project-value-text {
   min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.15;
 }
 
 .project-mark {
+  position: absolute;
+  top: -7px;
+  right: -7px;
   display: inline-grid;
-  min-width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   place-items: center;
-  flex: 0 0 auto;
   border-radius: 50%;
   color: #fff;
-  font-size: 12px;
+  border: 1px solid #fff;
+  font-size: 10px;
   font-weight: 900;
   line-height: 1;
+  box-shadow: 0 1px 4px rgba(20, 24, 32, 0.2);
 }
 
 .project-mark.right {
