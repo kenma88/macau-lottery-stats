@@ -2,6 +2,7 @@ const loginForm = document.querySelector("#loginForm");
 const passwordInput = document.querySelector("#passwordInput");
 const loginError = document.querySelector("#loginError");
 
+const tabSessionKey = "macauLotteryTabSessionActive";
 const nextPath = getNextPath();
 
 loginForm.addEventListener("submit", async (event) => {
@@ -32,7 +33,8 @@ loginForm.addEventListener("submit", async (event) => {
       throw new Error(payload?.error || "登录失败。");
     }
 
-    window.location.replace(addLoginEntry(nextPath));
+    markAppTabSession();
+    window.location.replace(nextPath);
   } catch (error) {
     setError(error?.message || "登录失败。");
     passwordInput.focus();
@@ -59,8 +61,10 @@ function getNextPath() {
   return next;
 }
 
-function addLoginEntry(path) {
-  const url = new URL(path, window.location.origin);
-  url.searchParams.set("login_entry", String(Date.now()));
-  return `${url.pathname}${url.search}${url.hash}`;
+function markAppTabSession() {
+  try {
+    sessionStorage.setItem(tabSessionKey, "1");
+  } catch {
+    // Some private browser modes can block sessionStorage.
+  }
 }

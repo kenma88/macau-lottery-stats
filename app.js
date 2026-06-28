@@ -4,6 +4,8 @@ const storageKeys = {
   imported2026: "macauLotteryImported2026_001_171",
 };
 
+const tabSessionKey = "macauLotteryTabSessionActive";
+
 const colorGroups = {
   red: [1, 2, 7, 8, 12, 13, 18, 19, 23, 24, 29, 30, 34, 35, 40, 45, 46],
   blue: [3, 4, 9, 10, 14, 15, 20, 25, 26, 31, 36, 37, 41, 42, 47, 48],
@@ -53,6 +55,7 @@ logoutButton?.addEventListener("click", async () => {
   } catch (error) {
     console.warn("Logout request failed:", error);
   } finally {
+    clearAppTabSession();
     redirectToLogin();
   }
 });
@@ -195,7 +198,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 async function initializeApp() {
-  if (location.protocol !== "file:" && !consumeLoginEntry() && !isReloadNavigation()) {
+  if (location.protocol !== "file:" && !hasAppTabSession()) {
     redirectToLogin();
     return;
   }
@@ -215,6 +218,10 @@ async function initializeApp() {
   }
 
   logoutButton.hidden = !isRemoteMode();
+
+  if (isRemoteMode()) {
+    markAppTabSession();
+  }
 
   render();
 }
@@ -740,6 +747,8 @@ const api = {
 
 async function request(url, options = {}) {
   const response = await fetch(url, {
+    cache: "no-store",
+    credentials: "same-origin",
     headers: {
       "Content-Type": "application/json",
       ...(options.headers ?? {}),
@@ -771,7 +780,44 @@ function redirectToLogin() {
   window.location.replace(loginUrl.toString());
 }
 
-function consumeLoginEntry() {
+function hasAppTabSession() {
+  if (readAppTabSession()) {
+    return true;
+  }
+
+  if (consumeLegacyLoginEntry()) {
+    markAppTabSession();
+    return true;
+  }
+
+  return false;
+}
+
+function readAppTabSession() {
+  try {
+    return sessionStorage.getItem(tabSessionKey) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markAppTabSession() {
+  try {
+    sessionStorage.setItem(tabSessionKey, "1");
+  } catch {
+    // Some private browser modes can block sessionStorage.
+  }
+}
+
+function clearAppTabSession() {
+  try {
+    sessionStorage.removeItem(tabSessionKey);
+  } catch {
+    // Some private browser modes can block sessionStorage.
+  }
+}
+
+function consumeLegacyLoginEntry() {
   const url = new URL(window.location.href);
   if (!url.searchParams.has("login_entry")) {
     return false;
@@ -781,10 +827,6 @@ function consumeLoginEntry() {
   const nextUrl = `${url.pathname}${url.search}${url.hash}`;
   window.history.replaceState(null, "", nextUrl || "/");
   return true;
-}
-
-function isReloadNavigation() {
-  return performance.getEntriesByType("navigation")[0]?.type === "reload";
 }
 
 initializeApp();
