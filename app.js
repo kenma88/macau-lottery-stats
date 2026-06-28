@@ -195,7 +195,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 async function initializeApp() {
-  if (location.protocol !== "file:" && !consumeLoginEntry()) {
+  if (location.protocol !== "file:" && !consumeLoginEntry() && !isReloadNavigation()) {
     redirectToLogin();
     return;
   }
@@ -215,7 +215,6 @@ async function initializeApp() {
   }
 
   logoutButton.hidden = !isRemoteMode();
-  clearTabClosedMarker();
 
   render();
 }
@@ -782,6 +781,10 @@ function consumeLoginEntry() {
   const nextUrl = `${url.pathname}${url.search}${url.hash}`;
   window.history.replaceState(null, "", nextUrl || "/");
   return true;
+}
+
+function isReloadNavigation() {
+  return performance.getEntriesByType("navigation")[0]?.type === "reload";
 }
 
 initializeApp();
