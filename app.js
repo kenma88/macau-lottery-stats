@@ -72,6 +72,7 @@ const recordColGroup = document.querySelector("#recordColGroup");
 const recordHeadRow = document.querySelector("#recordHeadRow");
 const recordBody = document.querySelector("#recordBody");
 const projectList = document.querySelector("#projectList");
+const recordPaginationTop = document.querySelector("#recordPaginationTop");
 const recordPagination = document.querySelector("#recordPagination");
 const issueInput = document.querySelector("#issueInput");
 const dateInput = document.querySelector("#dateInput");
@@ -333,7 +334,7 @@ function renderStartupError() {
   recordHeadRow.innerHTML = "";
   recordColGroup.innerHTML = "";
   projectList.innerHTML = `<div class="empty-state compact">云端未连接</div>`;
-  recordPagination.innerHTML = "";
+  clearPagination();
   recordBody.innerHTML = `
     <tr>
       <td colspan="1">
@@ -491,7 +492,7 @@ function renderPagination() {
   const totalPages = getTotalPages();
 
   if (totalPages <= 1 || !records.length) {
-    recordPagination.innerHTML = "";
+    clearPagination();
     return;
   }
 
@@ -506,25 +507,45 @@ function renderPagination() {
     `);
   }
 
-  recordPagination.innerHTML = `
+  const paginationHtml = `
     <button type="button" class="page-button nav" data-page-nav="prev" ${currentPage === 1 ? "disabled" : ""}>上一页</button>
+    <span class="page-summary">第 ${currentPage} / ${totalPages} 页，共 ${records.length} 期</span>
     <div class="page-numbers">${pages.join("")}</div>
     <button type="button" class="page-button nav" data-page-nav="next" ${currentPage === totalPages ? "disabled" : ""}>下一页</button>
   `;
 
-  recordPagination.querySelectorAll("[data-page]").forEach((button) => {
+  getPaginationContainers().forEach((container) => {
+    container.innerHTML = paginationHtml;
+    bindPagination(container);
+  });
+}
+
+function bindPagination(container) {
+  container.querySelectorAll("[data-page]").forEach((button) => {
     button.addEventListener("click", () => {
       currentPage = Number(button.dataset.page);
       renderRecords();
     });
   });
 
-  recordPagination.querySelectorAll("[data-page-nav]").forEach((button) => {
+  container.querySelectorAll("[data-page-nav]").forEach((button) => {
     button.addEventListener("click", () => {
-      currentPage += button.dataset.pageNav === "prev" ? -1 : 1;
+      const totalPages = getTotalPages();
+      const direction = button.dataset.pageNav === "prev" ? -1 : 1;
+      currentPage = Math.min(totalPages, Math.max(1, currentPage + direction));
       renderRecords();
     });
   });
+}
+
+function clearPagination() {
+  getPaginationContainers().forEach((container) => {
+    container.innerHTML = "";
+  });
+}
+
+function getPaginationContainers() {
+  return [recordPaginationTop, recordPagination].filter(Boolean);
 }
 
 function renderBall(value) {
