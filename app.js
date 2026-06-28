@@ -12,7 +12,57 @@ const colorGroups = {
   green: [5, 6, 11, 16, 17, 21, 22, 27, 28, 32, 33, 38, 39, 43, 44, 49],
 };
 
-const zodiacs = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
+const zodiacByNumber2026 = {
+  1: "马",
+  2: "蛇",
+  3: "龙",
+  4: "兔",
+  5: "虎",
+  6: "牛",
+  7: "鼠",
+  8: "猪",
+  9: "狗",
+  10: "鸡",
+  11: "猴",
+  12: "羊",
+  13: "马",
+  14: "蛇",
+  15: "龙",
+  16: "兔",
+  17: "虎",
+  18: "牛",
+  19: "鼠",
+  20: "猪",
+  21: "狗",
+  22: "鸡",
+  23: "猴",
+  24: "羊",
+  25: "马",
+  26: "蛇",
+  27: "龙",
+  28: "兔",
+  29: "虎",
+  30: "牛",
+  31: "鼠",
+  32: "猪",
+  33: "狗",
+  34: "鸡",
+  35: "猴",
+  36: "羊",
+  37: "马",
+  38: "蛇",
+  39: "龙",
+  40: "兔",
+  41: "虎",
+  42: "牛",
+  43: "鼠",
+  44: "猪",
+  45: "狗",
+  46: "鸡",
+  47: "猴",
+  48: "羊",
+  49: "马",
+};
 const officialRecords2026 = Array.isArray(window.OFFICIAL_RECORDS_2026) ? window.OFFICIAL_RECORDS_2026 : [];
 
 const todayLabel = document.querySelector("#todayLabel");
@@ -319,9 +369,9 @@ function renderRecords() {
           <td>${escapeHtml(record.issue)}</td>
           <td>${escapeHtml(record.date)}</td>
           <td>
-            <div class="balls">${record.regular.map((number, ballIndex) => renderBall(number, record.zodiacs?.[ballIndex])).join("")}</div>
+            <div class="balls">${record.regular.map((number) => renderBall(number)).join("")}</div>
           </td>
-          <td class="special-cell">${renderBall(special, record.zodiacs?.[6])}</td>
+          <td class="special-cell">${renderBall(special)}</td>
           <td><span class="badge">${special % 2 === 0 ? "双" : "单"}</span></td>
           <td><span class="badge">${special >= 26 ? "大" : "小"}</span></td>
           <td><span class="badge">${getDigitSumParity(special)}</span></td>
@@ -477,9 +527,9 @@ function renderPagination() {
   });
 }
 
-function renderBall(value, zodiacOverride) {
+function renderBall(value) {
   const number = normalizeNumber(value);
-  const zodiac = zodiacOverride || getZodiac(number);
+  const zodiac = getZodiac(number);
   return `
     <span class="ball-pair">
       <span class="ball ${getColor(number)}">${String(number).padStart(2, "0")}</span>
@@ -688,7 +738,7 @@ function getColor(number) {
 }
 
 function getZodiac(number) {
-  return zodiacs[(number - 1) % zodiacs.length];
+  return zodiacByNumber2026[normalizeNumber(number)] || "";
 }
 
 function getZodiacColor(zodiac) {
@@ -714,7 +764,7 @@ function normalizeRecord(record) {
     date: String(record.date ?? ""),
     regular,
     special,
-    zodiacs: Array.isArray(record.zodiacs) && record.zodiacs.length === 7 ? record.zodiacs : [...regular, special].map((number) => getZodiac(number)),
+    zodiacs: [...regular, special].map((number) => getZodiac(number)),
     projectValues: { ...(record.projectValues ?? {}) },
   };
   return normalized;

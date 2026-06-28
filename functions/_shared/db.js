@@ -1,6 +1,56 @@
 import { officialRecords2026 } from "./official-records-2026-data.js";
 
-const zodiacs = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
+const zodiacByNumber2026 = {
+  1: "马",
+  2: "蛇",
+  3: "龙",
+  4: "兔",
+  5: "虎",
+  6: "牛",
+  7: "鼠",
+  8: "猪",
+  9: "狗",
+  10: "鸡",
+  11: "猴",
+  12: "羊",
+  13: "马",
+  14: "蛇",
+  15: "龙",
+  16: "兔",
+  17: "虎",
+  18: "牛",
+  19: "鼠",
+  20: "猪",
+  21: "狗",
+  22: "鸡",
+  23: "猴",
+  24: "羊",
+  25: "马",
+  26: "蛇",
+  27: "龙",
+  28: "兔",
+  29: "虎",
+  30: "牛",
+  31: "鼠",
+  32: "猪",
+  33: "狗",
+  34: "鸡",
+  35: "猴",
+  36: "羊",
+  37: "马",
+  38: "蛇",
+  39: "龙",
+  40: "兔",
+  41: "虎",
+  42: "牛",
+  43: "鼠",
+  44: "猪",
+  45: "狗",
+  46: "鸡",
+  47: "猴",
+  48: "羊",
+  49: "马",
+};
 const officialImportKey = "official_import_2026_001_171";
 
 const schemaStatements = [
@@ -89,7 +139,7 @@ export async function readState(env) {
     date: row.draw_date,
     regular: JSON.parse(row.regular_json),
     special: Number(row.special),
-    zodiacs: JSON.parse(row.zodiacs_json),
+    zodiacs: [...JSON.parse(row.regular_json), Number(row.special)].map((number) => getZodiac(number)),
     projectValues: valueMap.get(row.issue) ?? {},
   }));
 
@@ -267,7 +317,6 @@ function normalizeRecordInput(payload) {
   const date = String(payload?.date ?? "").trim();
   const regular = Array.isArray(payload?.regular) ? payload.regular.map((number) => Number(number)) : [];
   const special = Number(payload?.special);
-  const zodiacsInput = Array.isArray(payload?.zodiacs) ? payload.zodiacs.map((value) => String(value)) : null;
 
   if (!issue) {
     throw createError("期号不能为空。", 400);
@@ -290,7 +339,7 @@ function normalizeRecordInput(payload) {
     date,
     regular,
     special,
-    zodiacs: zodiacsInput && zodiacsInput.length === 7 ? zodiacsInput : [...regular, special].map((number) => getZodiac(number)),
+    zodiacs: [...regular, special].map((number) => getZodiac(number)),
   };
 }
 
@@ -299,5 +348,5 @@ function isValidNumber(number) {
 }
 
 function getZodiac(number) {
-  return zodiacs[(number - 1) % zodiacs.length];
+  return zodiacByNumber2026[Number(number)] || "";
 }
