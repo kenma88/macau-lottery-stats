@@ -509,7 +509,7 @@ function renderPagination() {
 
   const paginationHtml = `
     <button type="button" class="page-button nav" data-page-nav="prev" ${currentPage === 1 ? "disabled" : ""}>上一页</button>
-    <span class="page-summary">第 ${currentPage} / ${totalPages} 页，共 ${records.length} 期</span>
+    <span class="page-summary">第 ${currentPage} / ${totalPages} 页，${getCurrentPageRangeLabel()}</span>
     <div class="page-numbers">${pages.join("")}</div>
     <button type="button" class="page-button nav" data-page-nav="next" ${currentPage === totalPages ? "disabled" : ""}>下一页</button>
   `;
@@ -729,12 +729,59 @@ function getColumnCount() {
 }
 
 function getCurrentPageRecords() {
-  const start = (currentPage - 1) * pageSize;
-  return records.slice(start, start + pageSize);
+  const { start, end } = getCurrentPageIssueRange();
+  return records
+    .filter((record) => {
+      const ordinal = getIssueOrdinal(record.issue);
+      return ordinal >= start && ordinal <= end;
+    })
+    .sort((left, right) => getIssueOrdinal(right.issue) - getIssueOrdinal(left.issue));
 }
 
 function getTotalPages() {
-  return Math.max(1, Math.ceil(records.length / pageSize));
+  const maxIssueOrdinal = getMaxIssueOrdinal();
+  return Math.max(1, Math.ceil(maxIssueOrdinal / pageSize));
+}
+
+function getCurrentPageIssueRange() {
+  const totalPages = getTotalPages();
+  const pageFromOldest = totalPages - currentPage;
+  const start = pageFromOldest * pageSize + 1;
+  const end = Math.min(getMaxIssueOrdinal(), start + pageSize - 1);
+  return { start, end };
+}
+
+function getCurrentPageRangeLabel() {
+  const { start, end } = getCurrentPageIssueRange();
+  return `${formatIssueLabel(start)}-${formatIssueLabel(end)}`;
+}
+
+function getMaxIssueOrdinal() {
+  return records.reduce((max, record) => Math.max(max, getIssueOrdinal(record.issue)), 0);
+}
+
+function getIssueOrdinal(issue) {
+  const value = String(issue ?? "").trim();
+  const match = value.match(/(\d{3})$/);
+  if (match) {
+    return Number(match[1]);
+  }
+
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : 0;
+}
+
+function formatIssueLabel(ordinal) {
+  const prefix = getIssuePrefix();
+  return `${prefix}${String(ordinal).padStart(3, "0")}`;
+}
+
+function getIssuePrefix() {
+  const issueWithPrefix = records
+    .map((record) => String(record.issue ?? "").trim())
+    .find((issue) => /^\d{4,}\d{3}$/.test(issue));
+
+  return issueWithPrefix ? issueWithPrefix.slice(0, -3) : "";
 }
 
 function parseNumbers(value) {
