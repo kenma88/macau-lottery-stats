@@ -33,6 +33,7 @@ const projectValueForm = document.querySelector("#projectValueForm");
 const modalTitle = document.querySelector("#modalTitle");
 const modalMeta = document.querySelector("#modalMeta");
 const modalValueInput = document.querySelector("#modalValueInput");
+const markInputs = [...document.querySelectorAll("input[name='projectMark']")];
 const closeModalBtn = document.querySelector("#closeModalBtn");
 const cancelModalBtn = document.querySelector("#cancelModalBtn");
 const clearModalBtn = document.querySelector("#clearModalBtn");
@@ -155,18 +156,23 @@ projectValueForm.addEventListener("submit", async (event) => {
   if (!editingProjectCell) return;
 
   const nextValue = modalValueInput.value.trim();
+  const nextMark = getSelectedProjectMark();
+  const serializedValue = serializeProjectValue({
+    text: nextValue,
+    mark: nextMark,
+  });
   const { recordIndex, projectName } = editingProjectCell;
   const record = records[recordIndex];
   if (!record) return;
 
   try {
     if (isRemoteMode()) {
-      await api.updateProjectValue(record.issue, projectName, nextValue);
+      await api.updateProjectValue(record.issue, projectName, serializedValue);
       await reloadRemoteData({ keepPage: true });
     } else {
       records[recordIndex].projectValues = {
         ...ensureProjectValues(record.projectValues),
-        [projectName]: nextValue,
+        [projectName]: serializedValue,
       };
       saveLocalState();
       render();
@@ -183,6 +189,7 @@ cancelModalBtn.addEventListener("click", closeProjectValueModal);
 
 clearModalBtn.addEventListener("click", () => {
   modalValueInput.value = "";
+  setSelectedProjectMark("");
   modalValueInput.focus();
 });
 
@@ -483,15 +490,20 @@ function renderBall(value, zodiacOverride) {
 
 function renderProjectValueCell(record, index, project) {
   const projectValues = ensureProjectValues(record.projectValues);
-  const value = projectValues[project.name] ?? "";
+  const parsedValue = parseProjectValue(projectValues[project.name] ?? "");
+  const value = parsedValue.text;
+  const mark = parsedValue.mark;
   return `
     <td>
       <button
-        class="project-value-button ${value ? "filled" : "empty"}"
+        class="project-value-button ${value || mark ? "filled" : "empty"}"
         type="button"
         data-record-index="${index}"
         data-edit-project="${escapeAttribute(project.name)}"
-      >${escapeHtml(value || "填写")}</button>
+      >
+        <span class="project-value-text">${escapeHtml(value || "填写")}</span>
+        ${renderProjectMark(mark)}
+      </button>
     </td>
   `;
 }
@@ -502,10 +514,12 @@ function openProjectValueModal(recordIndex, projectName) {
 
   editingProjectCell = { recordIndex, projectName };
   const projectValues = ensureProjectValues(record.projectValues);
+  const parsedValue = parseProjectValue(projectValues[projectName] ?? "");
 
   modalTitle.textContent = projectName;
   modalMeta.textContent = `${record.issue} 期开奖`;
-  modalValueInput.value = projectValues[projectName] ?? "";
+  modalValueInput.value = parsedValue.text;
+  setSelectedProjectMark(parsedValue.mark);
   projectValueModal.hidden = false;
   modalValueInput.focus();
   modalValueInput.select();
@@ -566,6 +580,77 @@ function createEmptyProjectValues() {
 
 function ensureProjectValues(projectValues = {}) {
   return Object.fromEntries(projects.map((project) => [project.name, projectValues?.[project.name] ?? ""]));
+}
+
+function parseProjectValue(value) {
+  const rawValue = String(value ?? "");
+  if (!rawValue.startsWith("{")) {
+    return {
+      text: rawValue,
+      mark: "",
+    };
+  }
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    if (parsed?.kind !== "project-value-mark") {
+      return {
+        text: rawValue,
+        mark: "",
+      };
+    }
+
+    return {
+      text: String(parsed?.text ?? ""),
+      mark: normalizeProjectMark(parsed?.mark),
+    };
+  } catch {
+    return {
+      text: rawValue,
+      mark: "",
+    };
+  }
+}
+
+function serializeProjectValue({ text, mark }) {
+  const normalizedText = String(text ?? "").trim();
+  const normalizedMark = normalizeProjectMark(mark);
+  if (!normalizedMark) {
+    return normalizedText;
+  }
+
+  return JSON.stringify({
+    kind: "project-value-mark",
+    text: normalizedText,
+    mark: normalizedMark,
+  });
+}
+
+function normalizeProjectMark(mark) {
+  return ["right", "wrong"].includes(mark) ? mark : "";
+}
+
+function renderProjectMark(mark) {
+  if (mark === "right") {
+    return `<span class="project-mark right">对</span>`;
+  }
+
+  if (mark === "wrong") {
+    return `<span class="project-mark wrong">错</span>`;
+  }
+
+  return "";
+}
+
+function getSelectedProjectMark() {
+  return normalizeProjectMark(markInputs.find((input) => input.checked)?.value ?? "");
+}
+
+function setSelectedProjectMark(mark) {
+  const normalizedMark = normalizeProjectMark(mark);
+  markInputs.forEach((input) => {
+    input.checked = input.value === normalizedMark;
+  });
 }
 
 function getColumnCount() {
