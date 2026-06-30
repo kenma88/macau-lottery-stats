@@ -19,6 +19,11 @@ loginForm.addEventListener("submit", async (event) => {
   submitButton.disabled = true;
   submitButton.textContent = "登录中...";
 
+  if (window.location.protocol === "file:") {
+    window.location.replace(getLocalNextPath());
+    return;
+  }
+
   try {
     const response = await fetch("/api/auth/login", {
       method: "POST",
@@ -64,4 +69,12 @@ function addLoginEntry(path) {
   const url = new URL(path, window.location.origin);
   url.searchParams.set(loginEntryParam, String(Date.now()));
   return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function getLocalNextPath() {
+  const next = getNextPath();
+  const normalizedHash = next === "/#picker" || next === "#picker" ? "#picker" : "#records";
+  const appUrl = new URL("../index.html", window.location.href);
+  appUrl.hash = normalizedHash.slice(1);
+  return appUrl.toString();
 }

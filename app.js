@@ -90,6 +90,11 @@ const closeModalBtn = document.querySelector("#closeModalBtn");
 const cancelModalBtn = document.querySelector("#cancelModalBtn");
 const clearModalBtn = document.querySelector("#clearModalBtn");
 const logoutButton = document.querySelector("#logoutButton");
+const navLinks = [...document.querySelectorAll(".nav-tabs a")];
+const recordsView = document.querySelector("#recordsView");
+const pickerView = document.querySelector("#pickerView");
+let mountPickerView = null;
+let pickerModuleReady = null;
 
 const pageSize = 20;
 let currentPage = 1;
@@ -99,6 +104,8 @@ let projects = [];
 let dataMode = "local";
 let statusTimer = null;
 let startupError = "";
+
+logoutButton.hidden = false;
 
 logoutButton?.addEventListener("click", async () => {
   try {
@@ -255,6 +262,21 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+window.addEventListener("popstate", () => {
+  void activateRoute(normalizeRouteHash(location.hash));
+});
+
+navLinks.forEach((link) => {
+  link.addEventListener("click", async (event) => {
+    event.preventDefault();
+    const targetHash = normalizeRouteHash(link.getAttribute("href"));
+    if (location.hash !== targetHash) {
+      history.pushState(null, "", targetHash);
+    }
+    await activateRoute(targetHash);
+  });
+});
+
 async function initializeApp() {
   if (location.protocol !== "file:" && !hasLoginEntry()) {
     redirectToLogin();
@@ -275,9 +297,61 @@ async function initializeApp() {
     }
   }
 
-  logoutButton.hidden = !isRemoteMode();
+  logoutButton.hidden = false;
 
   render();
+  await activateRoute(normalizeRouteHash(location.hash));
+}
+
+async function initializePickerView() {
+  if (pickerModuleReady) {
+    return pickerModuleReady;
+  }
+
+  pickerModuleReady = import("./picker/picker.js")
+    .then((pickerModule) => {
+      mountPickerView = pickerModule.mountPicker ?? null;
+    })
+    .catch((error) => {
+      console.error("Picker module failed to load:", error);
+      pickerModuleReady = null;
+    });
+
+  return pickerModuleReady;
+}
+
+async function activateRoute(activeHash) {
+  updateActiveNavTab(activeHash);
+  updateVisibleView(activeHash);
+
+  if (activeHash === "#picker") {
+    await initializePickerView();
+    if (typeof mountPickerView === "function") {
+      mountPickerView();
+    }
+  }
+}
+
+function updateActiveNavTab(activeHash) {
+  navLinks.forEach((link) => {
+    link.classList.toggle("active", link.getAttribute("href") === activeHash);
+  });
+}
+
+function updateVisibleView(activeHash) {
+  const showPicker = activeHash === "#picker";
+
+  if (recordsView) {
+    recordsView.hidden = showPicker;
+  }
+
+  if (pickerView) {
+    pickerView.hidden = !showPicker;
+  }
+}
+
+function normalizeRouteHash(hashValue) {
+  return hashValue === "#picker" ? "#picker" : "#records";
 }
 
 async function tryInitializeRemote() {
@@ -981,6 +1055,10 @@ async function request(url, options = {}) {
 
 function redirectToLogin() {
   if (location.protocol === "file:") {
+    const next = normalizeRouteHash(location.hash);
+    const loginUrl = new URL("./login/index.html", window.location.href);
+    loginUrl.searchParams.set("next", next);
+    window.location.replace(loginUrl.toString());
     return;
   }
 

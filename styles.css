@@ -810,7 +810,7 @@ input:focus {
     width: 100%;
   }
 
-  .project-form .primary-button {
+.project-form .primary-button {
     width: 100%;
   }
 
@@ -820,5 +820,313 @@ input:focus {
 
   .login-brand {
     align-items: flex-start;
+  }
+}
+
+.picker-page-panel {
+  overflow: hidden;
+}
+
+.picker-result-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px 20px 16px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, #fff 0, #fff8f8 100%);
+}
+
+.picker-result-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.picker-result-title-bar {
+  width: 7px;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--blue);
+}
+
+.picker-result-heading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 24px;
+}
+
+.picker-result-stage {
+  padding: 18px 18px 14px;
+}
+
+.picker-result-frame {
+  display: grid;
+  padding: 0;
+  border: 1px solid #d8c9bf;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.picker-result-stack-frame {
+  grid-template-rows: 120px auto;
+}
+
+.picker-result-pane {
+  min-height: 0;
+}
+
+.picker-result-pane + .picker-result-pane {
+  border-top: 1px solid #d8c9bf;
+}
+
+.picker-pane-body {
+  position: relative;
+  min-height: 0;
+  height: 100%;
+}
+
+.picker-draft-input {
+  width: 100%;
+  min-height: 120px;
+  height: 100%;
+  padding: 14px 16px;
+  border: 0;
+  resize: none;
+  outline: none;
+  background: linear-gradient(180deg, #fff 0, #fffdfb 100%);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.picker-result-board {
+  display: grid;
+  align-content: flex-start;
+  min-height: 336px;
+  padding: 0 2px;
+  background: linear-gradient(180deg, #fff 0, #fffdfa 100%);
+}
+
+.picker-filter-panel {
+  border-top: 1px solid var(--line);
+  background: linear-gradient(180deg, #fff 0, #fff8f8 100%);
+}
+
+.filter-groups {
+  display: grid;
+  gap: 12px;
+  padding: 14px 18px 18px;
+}
+
+.filter-group {
+  display: grid;
+  gap: 14px;
+}
+
+.filter-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.filter-group-head strong {
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.filter-clear-button {
+  min-width: 82px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 2px solid #f0c2bb;
+  border-radius: 999px;
+  color: var(--deep-red);
+  background: #fff9f7;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.filter-option-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.filter-option {
+  min-width: 64px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 2px solid #d9dde6;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.filter-option.active {
+  color: #fff;
+  background: var(--red);
+  border-color: var(--red);
+}
+
+.zodiac-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 336px;
+}
+
+.zodiac-cell {
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  align-items: stretch;
+  min-height: 56px;
+  border-bottom: 1px solid #eadcd2;
+}
+
+.zodiac-cell:nth-child(odd) {
+  border-right: 1px solid #eadcd2;
+}
+
+.zodiac-cell:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.zodiac-name {
+  display: grid;
+  place-items: center;
+  border-right: 1px solid #efe2d8;
+  background: #fffdfc;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.zodiac-name.zodiac-red {
+  color: var(--red);
+}
+
+.zodiac-name.zodiac-blue {
+  color: var(--blue);
+}
+
+.zodiac-name.zodiac-green {
+  color: var(--green);
+}
+
+.zodiac-values {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 56px;
+  padding: 8px 12px;
+}
+
+.result-chip {
+  position: relative;
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+}
+
+.result-chip.red {
+  background: var(--red);
+}
+
+.result-chip.blue {
+  background: var(--blue);
+}
+
+.result-chip.green {
+  background: var(--green);
+}
+
+.result-chip-label {
+  line-height: 1;
+}
+
+.result-chip-remove {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  width: 15px;
+  height: 15px;
+  place-items: center;
+  border: 1px solid rgba(204, 24, 40, 0.28);
+  border-radius: 50%;
+  color: var(--deep-red);
+  background: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(20, 24, 32, 0.14);
+}
+
+.result-empty-line {
+  display: block;
+  width: 76px;
+  height: 1px;
+  border-radius: 999px;
+  background: rgba(217, 201, 191, 0.55);
+}
+
+@media (max-width: 680px) {
+  .picker-result-stage {
+    padding: 14px 14px 12px;
+  }
+
+  .picker-result-stack-frame {
+    grid-template-rows: 110px auto;
+  }
+
+  .picker-draft-input {
+    min-height: 110px;
+  }
+
+  .picker-result-board,
+  .zodiac-grid {
+    min-height: 228px;
+  }
+
+  .zodiac-cell {
+    grid-template-columns: 28px 1fr;
+    min-height: 46px;
+  }
+
+  .zodiac-name {
+    font-size: 14px;
+  }
+
+  .zodiac-values {
+    min-height: 46px;
+    padding: 6px;
+    gap: 10px;
+  }
+
+  .result-chip {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .result-chip-remove {
+    top: -6px;
+    right: -6px;
+    width: 14px;
+    height: 14px;
+    font-size: 10px;
   }
 }

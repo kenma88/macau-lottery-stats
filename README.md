@@ -16,6 +16,7 @@
 - `styles.css`：样式
 - `app.js`：前端逻辑
 - `official-records-2026.js`：本地模式下的 2026 官方数据
+- `picker/`：独立的“挑码助手”原型页与测试文件，先单独验证后再合并
 - `functions/`：Cloudflare Pages Functions 接口
 - `schema.sql`：D1 表结构
 - `wrangler.toml`：Cloudflare 部署配置

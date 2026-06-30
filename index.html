@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>新澳门六合彩开奖统计表</title>
-    <link rel="stylesheet" href="styles.css?v=20260628-9" />
+    <link rel="stylesheet" href="styles.css?v=20260630-3" />
   </head>
   <body>
     <header class="site-header">
@@ -20,70 +20,103 @@
       </div>
       <nav class="nav-tabs" aria-label="页面栏目">
         <a href="#records" class="active">开奖记录</a>
+        <a href="#picker">挑码助手</a>
       </nav>
     </header>
 
     <main class="page-shell">
-      <section id="records" class="panel">
-        <div class="section-heading">
-          <div>
-            <h2>开奖记录</h2>
-            <p>添加或删除每期开奖结果，号码会自动生成波色与生肖展示。</p>
+      <div id="recordsView" class="page-view" data-view="records">
+        <section id="records" class="panel">
+          <div class="section-heading">
+            <div>
+              <h2>开奖记录</h2>
+              <p>添加或删除每期开奖结果，号码会自动生成波色与生肖展示。</p>
+            </div>
           </div>
-        </div>
 
-        <form id="recordForm" class="record-form">
-          <label>
-            <span>期号</span>
-            <input id="issueInput" type="text" inputmode="numeric" placeholder="例如 20260620" required />
-          </label>
-          <label>
-            <span>开奖日期</span>
-            <input id="dateInput" type="date" required />
-          </label>
-          <label>
-            <span>平码 1-6</span>
-            <input id="regularInput" type="text" placeholder="01, 08, 16, 23, 31, 45" required />
-          </label>
-          <label>
-            <span>特码</span>
-            <input id="specialInput" type="text" inputmode="numeric" placeholder="49" required />
-          </label>
-          <button type="submit" class="primary-button">新增记录</button>
-        </form>
+          <form id="recordForm" class="record-form">
+            <label>
+              <span>期号</span>
+              <input id="issueInput" type="text" inputmode="numeric" placeholder="例如 20260620" required />
+            </label>
+            <label>
+              <span>开奖日期</span>
+              <input id="dateInput" type="date" required />
+            </label>
+            <label>
+              <span>平码 1-6</span>
+              <input id="regularInput" type="text" placeholder="01, 08, 16, 23, 31, 45" required />
+            </label>
+            <label>
+              <span>特码</span>
+              <input id="specialInput" type="text" inputmode="numeric" placeholder="49" required />
+            </label>
+            <button type="submit" class="primary-button">新增记录</button>
+          </form>
 
-        <div class="table-wrap">
-          <table class="draw-table">
-            <colgroup id="recordColGroup"></colgroup>
-            <thead>
-              <tr id="recordHeadRow"></tr>
-            </thead>
-            <tbody id="recordBody"></tbody>
-          </table>
-        </div>
-        <div id="recordPagination" class="record-pagination" aria-label="开奖记录分页"></div>
-      </section>
-
-      <section id="projects" class="panel">
-        <div class="section-heading">
-          <div>
-            <h2>统计项目管理</h2>
-            <p>新增后会自动追加到“特码相加”后面。</p>
+          <div class="table-wrap">
+            <table class="draw-table">
+              <colgroup id="recordColGroup"></colgroup>
+              <thead>
+                <tr id="recordHeadRow"></tr>
+              </thead>
+              <tbody id="recordBody"></tbody>
+            </table>
           </div>
-        </div>
+          <div id="recordPagination" class="record-pagination" aria-label="开奖记录分页"></div>
+        </section>
 
-        <form id="projectForm" class="project-form">
-          <label class="project-input-wrap">
-            <input id="projectInput" type="text" placeholder="例如 特码尾数+1" required />
-          </label>
-          <button type="submit" class="primary-button">新增项目</button>
-        </form>
+        <section id="projects" class="panel">
+          <div class="section-heading">
+            <div>
+              <h2>统计项目管理</h2>
+              <p>新增后会自动追加到“特码相加”后面。</p>
+            </div>
+          </div>
 
-        <div class="project-tags-panel">
-          <span class="project-tags-title">已添加项目</span>
-          <div class="project-list" id="projectList" aria-live="polite"></div>
-        </div>
-      </section>
+          <form id="projectForm" class="project-form">
+            <label class="project-input-wrap">
+              <input id="projectInput" type="text" placeholder="例如 特码尾数+1" required />
+            </label>
+            <button type="submit" class="primary-button">新增项目</button>
+          </form>
+
+          <div class="project-tags-panel">
+            <span class="project-tags-title">已添加项目</span>
+            <div class="project-list" id="projectList" aria-live="polite"></div>
+          </div>
+        </section>
+      </div>
+
+      <div id="pickerView" class="page-view" data-view="picker" hidden>
+        <section id="picker" class="panel picker-page-panel">
+          <div class="picker-result-heading">
+            <div class="picker-result-title-wrap">
+              <span class="picker-result-title-bar" aria-hidden="true"></span>
+              <h2>挑码结果</h2>
+            </div>
+          </div>
+
+          <div class="picker-result-stage">
+            <div class="picker-result-frame picker-result-stack-frame">
+              <section class="picker-result-pane">
+                <div class="picker-pane-body">
+                  <textarea id="draftBoard" class="picker-draft-input" spellcheck="false" aria-label="草稿区"></textarea>
+                </div>
+              </section>
+              <section class="picker-result-pane">
+                <div class="picker-pane-body">
+                  <div id="resultBoard" class="picker-result-board" aria-label="挑码结果显示"></div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="picker-filter-panel">
+            <div id="filterGroups" class="filter-groups"></div>
+          </div>
+        </section>
+      </div>
     </main>
 
     <div id="projectValueModal" class="modal-backdrop" hidden>
@@ -128,6 +161,6 @@
     </div>
 
     <script src="official-records-2026.js?v=20260628-9"></script>
-    <script src="app.js?v=20260628-9"></script>
+    <script src="app.js?v=20260630-6"></script>
   </body>
 </html>

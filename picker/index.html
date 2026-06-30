@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>挑码助手原型</title>
+    <link rel="stylesheet" href="picker.css?v=20260629-27" />
+  </head>
+  <body>
+    <header class="picker-header">
+      <div class="picker-brand">
+        <div class="picker-mark">挑</div>
+        <div>
+          <h1>挑码助手原型</h1>
+          <p>独立测试页，确认功能稳定后再合并到主页面。</p>
+        </div>
+      </div>
+      <a class="picker-backlink" href="../index.html">返回统计表</a>
+    </header>
+
+    <main class="picker-shell">
+      <section class="picker-panel result-panel">
+        <div class="result-heading">
+          <div class="result-title-wrap">
+            <span class="result-title-bar" aria-hidden="true"></span>
+            <h2>挑码结果</h2>
+          </div>
+        </div>
+
+        <div class="result-stage">
+          <div class="result-frame result-stack-frame">
+            <section class="result-pane draft-pane">
+              <div class="pane-body draft-body">
+                <textarea id="draftBoard" class="draft-input" spellcheck="false" aria-label="草稿区"></textarea>
+              </div>
+            </section>
+            <section class="result-pane output-pane">
+              <div class="pane-body output-body">
+                <div id="resultBoard" class="result-board" aria-label="功能区结果显示"></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="picker-panel">
+        <div id="filterGroups" class="filter-groups"></div>
+      </section>
+
+    </main>
+
+    <script type="module" src="picker.js?v=20260629-27"></script>
+  </body>
+</html>
